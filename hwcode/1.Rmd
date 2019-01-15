@@ -1,0 +1,267 @@
+---
+title: "6231 HW4 CODE"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Question 1
+# a)
+```{r}
+y=c(0,0,0,0,1,1,1,1)
+x1=c(1,2,3,3,5,6,10,11)
+m=glm(y~x1,family=binomial(link=logit))
+summary(m)
+```
+
+The warning message indicates that we have a variable which perfectly separates 0 and 1 in targe variables.
+$log(\frac{\hat\pi}{1-\hat\pi})=-94.87+23.62*x1$
+
+\noindent The coeffeient estimate are \alpha =-94.84, \beta=23.62
+
+\noindent The standard erreors are 202572.35 and 28291.51
+
+\noindent There is an indication of complete separation 
+
+\noindent When y equals to 0, x1 equals to 1,2,3,3,, \pi equals to 0 when we use 10 digits accuracy.
+
+\noindent When y equals to 1, x1  equals to 5,6,10,11, \pi equals to 1 when we use 10 digits accuacy.
+
+# b)
+```{r}
+x1=c(1,2,3,3,3,6,10,11)
+m=glm(y~x1,family=binomial(link=logit))
+summary(m)
+```
+ The warning message indicates that we have a variable which perfectly separates 0 and 1 in targe variables.
+$log(\frac{\hat\pi}{1-\hat\pi})=-54.08+17.8*x1$
+
+\noindent The coeffeient estimate are \alpha =54.08, \beta=17.8
+
+\noindent The standard erreors are 18834.18 and 6278.06
+
+\noindent There is an indication of quassi-complete separation 
+\noindent When y equals to 0, x1 equals to 1,2 \pi equals to 0 when we use 10 digits accuracy.
+
+\noindent When y equals to 1, x1  equals to 6,10,11, \pi equals to 1 when we use 10 digits accuacy.
+
+\noindent However, two obseration at x1=3 one with y=1 and one with y=0 
+
+## Question 4
+## a)
+```{r}
+data=read.table("d://book.txt",header = TRUE)
+m2=glm(survival~age,family=binomial(link=logit),data=data)
+m2$coefficients
+exp(m2$coefficients)
+summary(m2)
+```
+$\hat{\beta}_{age}$ =-0.03689 
+
+$e^{\hat{\beta}_{age}}$=0.9637
+
+$\hat{\beta}_{age}$ mean when age change one unit, the log(odd ratio) will change -0.03689  time. It means that a old people decreased the log odd by $\hat{\beta}_{age}$ =-0.03689 
+
+$e^{\hat{\beta}_{age}}$ mean when age change one unit, the odd ratio will change 0.9637 time. It means that the old people possible survival rate is lower than younger people. 
+
+## b)
+```{r}
+-0.03689/0.01493
+```
+H0: $\hat{\beta}_{age} = 0$ Ha:$\hat{\beta}_{age} \neq 0$ 
+
+$z_{w}=\frac{\hat{\beta}_{age}-0}{SE({\hat{\beta}_{age}})}=\frac{-0.03689}{0.01493} =-2.470864$
+
+Becase$|z_{w}|=2.471>z_{\alpha/2}=1.96$ so we reject H0.
+
+##c)
+
+```{r}
+lb = m2$coefficients[2] - qnorm(.05/2,lower.tail=FALSE)*summary(m2)$coefficients[2,2]
+
+ub = m2$coefficients[2] + qnorm(.05/2,lower.tail=FALSE) * summary(m2)$coefficients[2,2]
+
+c(lb,ub)
+exp(c(lb,ub))
+
+```
+From above we can get the 95% confident interval of $\hat{\beta}_{age}$ is (-0.066141852,-0.007634613). Because the confident interval do not contain the value zero, so we reject the H0 hyphothesis. So there are significant effect on age and survival. 
+
+## d)
+```{r}
+age2=(data$age)^2
+m3=glm(survival~age+age2+sex+status, family=binomial(link=logit),data=data)
+summary(m3)
+diff.dev = deviance(m2) - deviance(m3)
+diff.dev
+qchisq(.95,4)
+```
+H0: reduced model Ha:Full model
+
+$G^{2}=21.65525>\chi^{2}_{4,0.05}=9.487729$
+So we reject the H0.So the model in part (d) is better than model in part(a). 
+
+## e)
+```{r}
+m3$coefficients[4]
+exp(m3$coefficients[4])
+```
+From above,we can see, $\hat{\beta}_{sex}=-0.663728$.It means that a man decreased the log odd of survivor by $\hat{\beta}_{sex}=-0.663728$.
+
+ $e^{\hat{\beta}_{sex}}=0.5149281$. It means that the man possible survival rate is lower than woman for 0.5149 time. 
+ 
+## Question 5 
+## a)
+```{r}
+Hire=rep(0,88)
+for (i in 1:88){ if(data$status[i]=='Hired'){Hire[i]=1}}
+single=rep(0,88)
+for (i in 1:88){ if(data$status[i]=='Single'){single[i]=1}}
+newx=cbind(1,data$age,age2,data$sex,Hire,single)
+fit_value=newx%*%m3$coefficients
+summary(fit_value)
+```
+By using the data and the model of 4(d), we get the result of fitted value for the log odd of survivor. And the descriptive statistics are showing above. 
+
+## b)
+```{r}
+pred.prob = exp(fit_value) / (1 + exp(fit_value))
+summary(pred.prob)
+```
+By using the data and the model of 4(d), we get the result of fitted value survivor $\pi_{i}=\frac{e^{X_{i}\beta}}{1+e^{X_{i}\beta}}$. And the descriptive statistics are showing above. 
+
+
+## C)i)
+```{r}
+cutoff_value=rep(0,88)
+for (i in 1:88){
+  if (pred.prob[i]>0.5)
+  {cutoff_value[i]=1}
+  else
+  {cutoff_value[i]=0}
+}
+cross_table=table(data$survival,cutoff_value)
+cross_table
+```
+
+From above cross-tabulation table we can find that there are 23 incorrect predict value. false positive is 16 and false negative is 7 
+
+## C)ii)
+```{r}
+cutoff_value2=rep(0,88)
+proportion=sum(data$survival)/88
+for (i in 1:88){
+  if (pred.prob[i]>proportion)
+  {cutoff_value2[i]=1}
+  else
+  {cutoff_value2[i]=0}
+}
+cross_table=table(data$survival,cutoff_value2)
+cross_table
+```
+From above cross-tabulation table we can find that there are 22 incorrect predict value. false positive is 12 and false negative is 10 
+
+## C)iii)
+p1=23/88=0.2614
+
+p2=22/88=0.25
+
+Only base on the proportion of incorrect, I will choose the second method because its proportion is smaller than first method.
+
+
+## c) iv) 
+First method:
+$FPR=P(\hat{y}=1|y=0)$=16/39=0.41
+$FNR=P(\hat{y}=0|y=1)$=7/49=0.143
+
+Second method:
+$FPR=P(\hat{y}=1|y=0)$=12/39=0.3077
+$FNR=P(\hat{y}=0|y=1)$=10/49=0.204
+
+## c) v)
+Based on the false positive and false positive rate, FPR(1)>FPR(2), FNR(2)<FNR(1).In survival situation,especially in insurance industry, the false positive rate is more seriour than false negetive. If we estimate a person is more likely to dead, then it is no profitable to sale the insurance for them.So if a person is actually more possible to die but we predict he/she can live, then it would lost money. So I would choose the second method.
+
+
+## c) vi)
+```{r}
+#install.packages("pROC")
+library(pROC)
+data2=data.frame(cbind(data$survival,pred.prob,cutoff_value,cutoff_value2))
+roc(data2$V1,data2$V2,plot=TRUE)
+points(42/49,1-16/39,col='blue',cex=2,pch=21)
+points(39/49,1-12/39,col='red',cex=2,pch=24)
+```
+
+
+From the above Roc cruve,we can see the area under the curve is 0.8004.Roc curve is a very useful method to compare the model, The bigger the value of AUC(area under curve) is, the better the model is. This AUC is 0.8004 not too bad, it can provide a realiable prediction. 
+
+## Question 7
+## a)
+```{r}
+rm(list = ls())
+data=read.csv("d:/gss.csv")
+library(VGAM)
+m1 = vglm(cbind(democrat,republican,independent)~gender+race, data=data, family=multinomial) 
+summary(m1)
+
+```
+## b)
+```{r}
+deviance(m1)
+qchisq(.05,2,lower.tail=FALSE)
+1-pchisq(deviance(m1),2)
+
+```
+From above result, we use the deviance GOF to test the fitness. We can see the gof 0.1982<5.9915 which mean we cannot reject the null(reduced model in favor of the saturated model). The model able to fit main effect and provide reasonable information
+
+## c
+From the part a) reuslt, we can see that when compared with democrate to independent, the gender is no significant beause the p value is 0.16412 which is larger than 0.05. However when it comes to republican, the gender effect show significant since the p value is 0.03271 smailler than 0.05.
+
+
+## d)
+```{r}
+exp(coefficients(m1))
+```
+The (intercept)1 is 4.008 which mean that the odd ratio of being a democrate ofr black females is 4.01. for 
+$\frac{\pi}{1-\pi}=4.008$ and \pi=0.7539.
+
+
+## e)
+
+The log likelihood of democrate vs baseline is 1.3882 which greater than 0 and the log likelihood of republican vs baseline is -1.1771 which is samller than 0. so it is obviously that \pi_{democrate}>\pi_{repulican}
+
+## f)
+
+$log(\frac{\pi_{d}}{\pi_{r}})=log(\frac{\pi{_d}}{\pi_{i}}\frac{\pi{_i}}{\pi_{r}})=(1.3882+1.1771)+(-0.2202-0.3526)*gender+(-1.1183-1.1598)*race=2.5653-0.5728*gender-2.2781*race$
+
+
+## g)
+```{r}
+m2 = vglm(cbind(democrat,independent,republican)~gender+race, data=data, family=multinomial) 
+summary(m2)
+
+```
+We can see the $log\frac{\pi_{d}}{\pi_{r}}is same with result in part f)
+
+## h)
+```{r}
+m3 = vglm(cbind(democrat,republican,independent)~gender, data=data, family=multinomial) 
+summary(m3)
+exp(coefficients(m3))
+
+```
+
+```{r}
+m4= vglm(cbind(democrat,republican,independent)~race, data=data, family=multinomial) 
+summary(m4)
+exp(coefficients(m4))
+
+```
+We can see for the different model, the estimated coefficients and the statistical significance of two models are different.
+
+## i) 
+The positive correlation can improve the correctness of estimating within subject effects. But for the inference between subject effect, the observation of single subject can not provide enough information as T observation. Pluse the positive correlation will causes large SE
+

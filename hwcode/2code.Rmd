@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+2e(i)
+```{r}
+a=list()
+for (t in 1:100)
+{
+  i=0
+  j=0
+  k=0
+  h=0
+  for (z in 1:500)
+  {
+    x=runif(1,0,1)
+    if (x<'0.75'){i=i+1}
+    else if (x>='0.545' && x<'0.851'){j=j+1}
+    else if (x>='0.851' && x<'0.872'){k=k+1}
+    else {h=h+1}
+  }
+  a[[t]]=t(matrix(c(i/500,j/500,k/500,h/500),2,2))
+}
+a
+```
+2e(ii)
+```{r}
+b=list()
+for (t in 1:100)
+{
+  or=(a[[t]][1,1]*a[[t]][2,2]/a[[t]][1,2]/a[[t]][2,1])
+  logor=log(or)
+  se_logor=sqrt(sum(1/a[[t]]/500))
+  b[[t]]=c(exp(logor-qnorm(1-0.05/2)*se_logor),exp(logor+qnorm(1-0.05/2)*se_logor))
+}
+b
+```
+
+2e(iii)
+when 100, the proportion is smaller and there are lots of NaN Inf shown in the CI simulation
+
+4(b)
+```{r}
+rm(list=ls())
+x=matrix(c(192,459,75,586,8,471),2,3)
+rownames(x)=c('yes','no')
+colnames=c('phd','employed','unemploy')
+x_marg=apply(x,1,sum)
+y_marg=apply(x,2,sum)
+mu_hat=(x_marg%*%t(y_marg))/sum(x)
+(x-mu_hat)/sqrt(mu_hat)
+chisq.test(x)$residuals
+
+```
+the residual show the natual connect.From the above result we can see that the residual of phd and yes is a large possitive value which mean the the 6231 class and phd have strong connection. The people who had 6231 is more likely to apply phd. So, in the same time we can see that when people who did not have the 6231 class are more likely to find work. 
+
+
+
+2e(iv)
+The proportion is 97/100=97%. it is larger than 95% but closed to 95%
+
+
+```{r}
+rm(list=ls())
+data = as.data.frame(UCBAdmissions)
+model1 = glm(Freq ~ Admit+Gender+Dept, data=data, family=poisson())
+
+```
+
+```{r}
+model2 = glm(Freq ~ Admit*Gender*Dept, data=data, family=poisson())
+
+```
+
+```{r}
+model3 = glm(Freq ~ Admit+Gender+Dept+Gender*Dept, data=data, family=poisson())
+
+```
+
+```{r}
+model4 = glm(Freq ~ Admit+Gender+Dept+Admit*Dept, data=data, family=poisson())
+
+```
+
+```{r}
+model5 = glm(Freq ~ Admit+Gender+Dept+Gender*Admit, data=data, family=poisson())
+
+```
+
+```{r}
+model6 = glm(Freq ~ Admit+Gender+Dept+Gender*Dept+Gender*Admit, data=data, family=poisson())
+
+```
+
+```{r}
+model7 = glm(Freq ~ Admit+Gender+Dept+Dept*Admit+Admit*Gender, data=data, family=poisson())
+
+```
+
+```{r}
+model8 = glm(Freq ~ Admit+Gender+Dept+Dept*Gender+Dept*Admit, data=data, family=poisson())
+
+```
+
+```{r}
+model9 = glm(Freq ~ Admit+Gender+Dept+Dept*Gender+Admit*Dept+Admit*Gender, data=data, family=poisson())
+
+```
+
+```{r}
+model=list(model1,model2,model3,model4,model5,model6,model7,model8,model9)
+```
+
+```{r}
+G2=round(unlist(lapply(model,deviance)),1)
+df=round(unlist(lapply(model,df.residual)),1)
+pvalue=rep(0,9)
+pvalue=round(pchisq(G2,df,lower.tail=F),10)
+model2=c(1,2,3,4,5,6,7,8,9)
+GOD.table=as.data.frame(cbind(model2,G2,df,pvalue))
+GOD.table
+
+
+```
+c) From the result show above,I would like to choose model8 which is x,y,z associate with each other.        
+```{r}
+anova(model9)
+```
+compare the deviance with homogenous model, the pvalue of A-G is 0.2306, other two way interaction pvalue are zero

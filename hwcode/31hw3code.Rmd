@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+2
+
+b)
+```{r}
+newton=function(n,pi_0){
+  a=rep(pi_0,n+1)
+  for (i in 1:n){
+    a[i+1]=a[i]+1/(3/a[i]^2+(10-3)/(1-a[i])^2)*(3-10*a[i])/(a[i]*(1-a[i]))
+  }
+  return(a)
+}
+```
+c)
+```{r}
+newton(6,0.1)
+newton(6,0.2)
+newton(6,0.3)
+newton(6,0.4)
+newton(6,0.5)
+newton(6,0.6)
+newton(6,0.7)
+newton(6,0.8)
+newton(6,0.9)
+```
+
+d) From the c result,we can see that the initial value is very importent.A good intiate value can make sure the speed of convergence. We can see even it the initiate value is not good enough, it will eventually converge to the true value, it just need more iteration to finish that.
+
+e) 
+When the starting value is 1, pi(i+1)=2^pi(i)
+When the starting value is 0, pi(i+1)-2^pi(i)-1
+They will not converge to pi_hat
+
+
+5
+
+a)
+```{r}
+A=cbind(rep(0,10),c(8,7,6,6,3,4,7,2,3,4))
+B=cbind(rep(1,10),c(9,9,8,14,8,13,11,5,7,6))
+seizure=data.frame(rbind(A,B))
+names(seizure)=c('x','y')
+fit.poisson=glm(y~x,family=poisson(),data=seizure)
+```
+
+```{r}
+seizure
+```
+
+```{r}
+fit.poisson
+```
+
+```{r}
+summary(fit.poisson)
+```
+mu=exp(a+bx)
+mua=exp(a)
+mub=exp(a+b)
+so exp(b)=mub/mua
+mu=exp(1.6094+0.5878x)
+mua=exp(1.6094)=4.9998
+mub=exp(1.6094+0.5878)=8.998
+
+for the estimation, we can get log(mub_hat/mua_hat)=0.5878,
+mub_hat=1.8mua_hat, that is to say the estimated average number in treatment B is about 1.8 time more than treatment A
+
+
+
+c)
+```{r}
+library(AER)
+dispersiontest(fit.poisson,trafo=1)
+
+```
+
+```{r}
+summary(glm(y~x, family = quasipoisson(),data=seizure))
+```
+
+We know that var(y)=E(y) +alpha*f where f os a monotone function. From above dispersiontest result, we can see that  p-value great than 0.05,so we cannot reject the null hypothesis which is true alpha is not greater than 0. And the alpha estimator is -0.19777778. Also from the quasipoisson reuslt, the dispersion parameter is less than 1. So there is no evidence of overdispersion 
+
+e)
+```{r}
+library(MASS)
+fit.nb=glm.nb(y~x,data=seizure,link=log)
+summary(fit.nb)
+```
+
+From above result, we can see the dispersion parameter for Negative Binomial  family taken to be 1. Since it is equal to 1 (the estimator of theta is 113420, the gamma is 1/113420), so we can consider it is overdispersion
+
+
+f)
+```{r}
+cbind('poisson'=coef(fit.poisson),'Negative Binomial'=coef(fit.nb ))
+```
+
+From above result, we can see the coefficient estimate bata_hat of poisson and negative binomial are the same. And the std.Error are both 0.1764.They are also the same.
+
+
+g)
+```{r}
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 5)))
+```
+
+```{r}
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 10)))
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 20)))
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 25)))
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 30)))
+summary(glm.nb(y~x,data=seizure,link=log,control = glm.control(maxit = 40)))
+```
+From the above result, we can see as the number of iteration increase, the estimate of Theta is getting larger and larger.
+
+h)
+```{r}
+summary(glm(y~1,family=poisson(),data=seizure))
+summary(glm.nb(y~1,data=seizure, link=log))
+```
+
+From above result, we can see the Estimate of intercept for both poisson and negative binomial are 1.94591, thay are the same. However the std Error of poisson is better than NB. They both just contain the intercept,so the value of null deviance and residual deviance are the same. But consider the null deviance and residual deviance of poisson and NB, we can see that the deviance of poisson is larger than NB. It also reflect by the AIC value, the AIC of NB is better than poisson. So we can say the NB model fitting is better than Poisson. The reason causing those different is because the different of distribution and likelihood function, so when calcuate the deviation, it will cause the difference.
+
+i)
+```{r}
+dispersiontest(glm(y~1,family=poisson(),data=seizure))
+```
+Since the p-value is greater than 0.1671, there is no evidence of overdispersion.

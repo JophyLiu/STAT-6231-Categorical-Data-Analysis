@@ -1,0 +1,73 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+## a)
+For the three response, there are actually have different kind of working correlation, it can be exchangeable, it can be autoregressive, unstructured or even independence. Depend on the different data, it can have different relation. In this three response, I believe that they have positive relationship. So we can set it as exchangeable or unstructured.  
+
+##b)
+```{r}
+library(gee)
+data=read.csv('d://attitudes (1).csv')
+m1=gee(response~gender+as.factor(question),id=case,family=binomial, corstr="unstructured", scale.fix=T, data=data)
+summary(m1)
+```
+
+```{r}
+m1$working.correlation
+```
+
+The correlation between different categories is relatively large. And we can see that the different pair have different correlation value, so I will suggest that the unstructured working correlation is resonable. 
+## d)
+```{r}
+m2=gee(response~gender+as.factor(question),id=case,family=binomial, corstr="exchangeable", scale.fix=T, data=data)
+summary(m2)
+```
+From above we can see the result of correlation matrix. we can see the correlation matrix of exchangeable, the value of all pair are all the same. For the unstructured, the value of pair correlation is different but in the exchangeable matrix, the value is all the same.  So we can consider that this model is reasonable too. 
+
+## e)
+from above result we can see that the $\beta_{gender}$=0.003438 which mean that females are 1.003438 time more likely to support the legalizing abortion than male.
+
+For the wald test of the relation between response and gender, we can see that robust z os 0.3913758 which is small than 1.96, so we can not reject the h0 (\bete_{gender}=0). There does not exist a relation between response and gender. 
+
+## f)
+```{r}
+
+lb = m2$coefficients[2] - qnorm(.05/2,lower.tail=FALSE)*summary(m2)$coefficients[2,4]
+
+ub = m2$coefficients[2] + qnorm(.05/2,lower.tail=FALSE) * summary(m2)$coefficients[2,4]
+
+c(lb,ub)
+exp(c(lb,ub))
+```
+From above we can see the result of 95% condifence interval for $\beta_{gender}$ and $e^{\beta_{gender}}$
+
+## g)
+logodd=0.02+0-0.9773=-0.0733
+odd=exp(logodd)=0.929322
+
+## h)
+
+```{r}
+m3=gee(response~gender+question,id=case,family=binomial, corstr="exchangeable", scale.fix=T, data=data)
+summary(m3)
+```
+
+From above working correlation matrix, we can see this matrix is similiar to the matrix in the part d). To make sure that the question (time variable) as continuous, we can set the time variable to have a range. Useing discrete version to represent the continue variables. For example for the age variable, we can set the range like 1-20, 21-50, 51-70. 
+
+## i) 
+```{r}
+m4=glm(response~gender+as.factor(question),family=binomial,data=data)
+summary(m4)
+coefficients(m2)
+coefficients(m4)
+
+```
+Compare to this two model coefficient, they have same coefficient. However when we compare with the standard error, two model are different. 
+
