@@ -1,0 +1,2 @@
+# STAT-6231-Categorical-Data-Analysis
+The purpose of this course is to provide a broad overview of the statistical procedures for analyzing categorical data encountered in a wide variety of fields including business, medical research, and social science. We will learn how to develop traditional approaches for analyzing categorical data including contingency tables (2-way and multi-dimensional) and generalized linear models (e.g. log-linear and logistic regression models).
